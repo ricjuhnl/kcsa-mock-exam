@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KCSA Mock Exam Simulator</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div id="quiz-screen">
+            <h1>KCSA Mock Practice Exam</h1>
+            <div class="meta-bar">
+                <div>Question <span id="current-q-num">1</span> of <span id="total-q-num">60</span></div>
+                <div class="timer">Time Remaining: <span id="timer-display">90:00</span></div>
+            </div>
+
+            <div id="question-container"></div>
+
+            <div class="navigation-btns">
+                <button class="btn" id="prev-btn" onclick="examEngine.prevQuestion()" disabled>Previous</button>
+                <button class="btn" id="action-btn" onclick="examEngine.handleActionClick()">Submit Answer</button>
+            </div>
+        </div>
+
+        <div id="results-screen" class="results-screen">
+            <h1>Exam Evaluation</h1>
+            <div class="meta-bar">
+                <div>Final Score: <span id="final-score">0%</span></div>
+                <div id="pass-fail-status"></div>
+            </div>
+            <p>A minimum score of <strong>75%</strong> is required to pass the official Linux Foundation KCSA exam.</p>
+            
+            <h3>Performance Breakdown by Domain</h3>
+            <table class="domain-score-table" id="breakdown-table">
+                <thead>
+                    <tr>
+                        <th>Exam Domain</th>
+                        <th>Correct / Total</th>
+                        <th>Percentage</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <br>
+            <button class="btn" onclick="window.location.reload()">Start New Exam</button>
+        </div>
+    </div>
+
+    <script type="module" src="/js/exam.js"></script>
+    <script type="module">
+        import { ExamEngine } from '/js/exam.js';
+        window.examEngine = new ExamEngine();
+        window.examEngine.init();
+    </script>
+</body>
+</html>
