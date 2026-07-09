@@ -143,6 +143,7 @@ async def submit_session(session_id: str, submission: SessionSubmit):
         answers = submission.answers
         questions_db = {}
         
+        db.row_factory = aiosqlite.Row
         for q_id in answers.keys():
             cursor = await db.execute("SELECT * FROM questions WHERE id = ?", (q_id,))
             q = await cursor.fetchone()
@@ -156,10 +157,22 @@ async def submit_session(session_id: str, submission: SessionSubmit):
             domain = blueprint_target["domain"]
             domain_stats[domain] = {"correct": 0, "total": 0}
         
+        # Check if questions were actually found in the database
+        if not questions_db and answers:
+            raise HTTPException(
+                status_code=500,
+                detail="No questions found in database. The question bank may not be properly seeded."
+            )
+        
         for q_id, selected_idx in answers.items():
-            q_id_int = int(q_id)
-            if q_id_int in questions_db:
-                q = questions_db[q_id_int]
+            # Convert question ID to integer for consistent lookup
+            try:
+                q_id_int = int(q_id)
+            except (ValueError, TypeError):
+                continue
+            
+            q = questions_db.get(q_id) or questions_db.get(q_id_int)
+            if q:
                 options = json.loads(q["options"])
                 selected_text = options[selected_idx] if selected_idx < len(options) else ""
                 correct_text = q["correct_answer"]
@@ -212,6 +225,7 @@ async def submit_session(session_id: str, submission: SessionSubmit):
 @app.get("/api/sessions/{session_id}")
 async def get_session(session_id: str):
     async with aiosqlite.connect(get_db_path()) as db:
+        db.row_factory = aiosqlite.Row
         cursor = await db.execute("SELECT * FROM exam_sessions WHERE id = ?", (session_id,))
         session = await cursor.fetchone()
         
